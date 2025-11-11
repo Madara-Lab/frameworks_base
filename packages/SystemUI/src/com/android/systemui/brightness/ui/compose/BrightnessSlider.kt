@@ -198,8 +198,7 @@ fun BrightnessSlider(
     val enabled = !isRestricted
     val contentDescription = stringResource(R.string.accessibility_brightness)
     val interactionSource = remember { MutableInteractionSource() }
-
-    val hapticStepFraction = 0.1f
+    val hapticStepFraction = 1f / 12f
     var lastHapticStep by remember(gammaValue) {
         mutableFloatStateOf(
             stepForValue(gammaValue, valueRange, hapticStepFraction)
