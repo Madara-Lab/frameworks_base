@@ -316,4 +316,8 @@
 
     <!-- Name of the VoWiFi status bar icon. -->
     <string name="status_bar_vowifi">Wi-Fi calling (VoWiFi)</string>
+
+    <!-- Essential Notifications -->
+    <string name="essential_notifications_title">Essentials</string>
+    <string name="essential_notifications_summary">Important messages and alerts</string>
 </resources>
