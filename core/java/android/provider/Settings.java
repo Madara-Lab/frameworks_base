@@ -7902,6 +7902,11 @@ public final class Settings {
         public static final String STATUS_BAR_BRIGHTNESS_CONTROL_LOCKSCREEN = "status_bar_brightness_control_lockscreen";
 
 	/**
+         * @hide
+         */
+        public static final String HIDE_STATUS_BAR_IN_SCREENSHOT = "hide_status_bar_in_screenshot";
+
+	/**
          * Whether to enable smart 5G mode
          * @hide
          */
