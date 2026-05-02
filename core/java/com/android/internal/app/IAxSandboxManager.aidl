@@ -53,4 +53,5 @@ interface IAxSandboxManager {
     void setSandboxDataIsolationEnabled(String packageName, boolean enabled);
 
     String getSpoofedSetting(String callingPackage, String settingName);
+    String getFileVaultPath();
 }
