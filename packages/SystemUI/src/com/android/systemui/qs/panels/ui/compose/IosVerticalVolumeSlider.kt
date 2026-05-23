@@ -85,7 +85,7 @@ fun IosVerticalVolumeSlider(modifier: Modifier = Modifier) {
     var ringerMode by remember { mutableIntStateOf(readRingerMode()) }
     var isDragging by remember { mutableStateOf(false) }
 
-    val targetFraction = volumeFraction.coerceAtLeast(0.05f)
+    val targetFraction = volumeFraction.coerceIn(0f, 1f)
 
     val animFraction by animateFloatAsState(
         targetValue = targetFraction,
