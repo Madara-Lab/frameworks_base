@@ -39,6 +39,7 @@ import com.android.systemui.dreams.homecontrols.system.HomeControlsDreamStartabl
 import com.android.systemui.globalactions.GlobalActionsComponent
 import com.android.systemui.haptics.msdl.MSDLCoreStartable
 import com.android.systemui.keyboard.KeyboardUI
+import com.android.systemui.hotspot.HotspotDataLimitController
 import com.android.systemui.keyboard.PhysicalKeyboardCoreStartable
 import com.android.systemui.keyevent.SysUIKeyGestureEventInitializer
 import com.android.systemui.keyguard.KeyguardViewConfigurator
@@ -362,4 +363,10 @@ abstract class SystemUICoreStartableModule {
     abstract fun bindSmartPixelManager(
         impl: SmartPixelManager
     ): CoreStartable
+
+    /** Inject into HotspotDataLimitController. */
+    @Binds
+    @IntoMap
+    @ClassKey(HotspotDataLimitController::class)
+    abstract fun bindHotspotDataLimitController(impl: HotspotDataLimitController): CoreStartable
 }
