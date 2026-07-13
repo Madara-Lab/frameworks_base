@@ -30,6 +30,7 @@ import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -259,6 +260,11 @@ fun LargeTileContent(
                 Modifier.size(CommonTileDefaults.ToggleTargetSize).thenIf(isDualTarget) {
                     Modifier.borderOnFocus(color = focusBorderColor, iconShape.topEnd)
                         .clip(iconShape)
+                        .border(
+                            width = 0.5.dp,
+                            color = Color(0xFF2A2F35),
+                            shape = iconShape
+                        )
                         .drawBehind {
                             val brush = colors.iconBackgroundGradient
                             if (brush != null) {

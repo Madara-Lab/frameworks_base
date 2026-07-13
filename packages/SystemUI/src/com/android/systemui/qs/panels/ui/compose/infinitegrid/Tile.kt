@@ -74,6 +74,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.foundation.border
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Shape
@@ -437,7 +438,11 @@ fun ContentScope.Tile(
                     iconOnly = iconOnly,
                     isDualTarget = isDualTarget,
                     classicStyle = classicStyle,
-                    modifier = contentRevealModifier,
+                    modifier = contentRevealModifier.border(
+                        width = 0.5.dp,
+                        color = Color(0xFF2A2F35),
+                        shape = tileShape
+                    ),
                     colors = colors,
                 ) {
                     val iconProvider: Context.() -> Icon = { getTileIcon(icon = icon) }
