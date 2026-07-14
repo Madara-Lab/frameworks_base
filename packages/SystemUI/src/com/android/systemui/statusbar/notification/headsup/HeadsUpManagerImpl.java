@@ -819,6 +819,24 @@ public class HeadsUpManagerImpl
     @Override
     public void addSwipedOutNotification(@NonNull String key) {
         mSwipedOutKeys.add(key);
+        HeadsUpEntry entry = getHeadsUpEntry(key);
+        if (entry != null && entry.mEntry != null) {
+            android.service.notification.StatusBarNotification sbn = entry.mEntry.getSbn();
+            if (sbn != null && sbn.getNotification() != null) {
+                String category = sbn.getNotification().category;
+                if (android.app.Notification.CATEGORY_CALL.equals(category)) {
+                    android.telecom.TelecomManager telecomManager = (android.telecom.TelecomManager) 
+                            mContext.getSystemService(android.content.Context.TELECOM_SERVICE);
+                    if (telecomManager != null) {
+                        try {
+                            telecomManager.endCall();
+                        } catch (SecurityException e) {
+                            android.util.Log.e("HeadsUpManagerImpl", "No permission to end call", e);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Nullable
