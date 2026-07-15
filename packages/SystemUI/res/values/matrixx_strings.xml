@@ -320,4 +320,7 @@
     <!-- Essential Notifications -->
     <string name="essential_notifications_title">Essentials</string>
     <string name="essential_notifications_summary">Important messages and alerts</string>
+
+    <!-- Toast shown when the memory clean quick tile is tapped -->
+    <string name="quick_settings_memory_cleaned_toast">Memory cleaned</string>
 </resources>
