@@ -378,7 +378,7 @@ class SystemIconsPopupController(
                                     .weight(1f)
                                     .fillMaxHeight()
                             ) {
-                                NetworkSection()
+                                NetworkSection(onDismiss = onDismiss)
                             }
                         }
                     }
@@ -1002,7 +1002,7 @@ class SystemIconsPopupController(
         }
 
     @Composable
-    private fun NetworkSection() {
+    private fun NetworkSection(onDismiss: () -> Unit) {
         val subscriptionManager = context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as? SubscriptionManager
         val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
 
@@ -1024,6 +1024,37 @@ class SystemIconsPopupController(
             }
             context.registerReceiver(receiver, IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED))
             awaitDispose { context.unregisterReceiver(receiver) }
+        }
+
+        var defaultDataSubId by remember {
+            mutableStateOf(SubscriptionManager.getDefaultDataSubscriptionId())
+        }
+
+        DisposableEffect(Unit) {
+            val receiver = object : BroadcastReceiver() {
+                override fun onReceive(c: Context?, intent: Intent?) {
+                    defaultDataSubId = SubscriptionManager.getDefaultDataSubscriptionId()
+                }
+            }
+            context.registerReceiver(
+                receiver,
+                IntentFilter("android.intent.action.ACTION_DEFAULT_DATA_SUBSCRIPTION_CHANGED")
+            )
+            onDispose { context.unregisterReceiver(receiver) }
+        }
+
+        var mobileDataEnabled by remember {
+            mutableStateOf(try { telephonyManager?.isDataEnabled ?: false } catch (e: Exception) { false })
+        }
+
+        DisposableEffect(Unit) {
+            val receiver = object : BroadcastReceiver() {
+                override fun onReceive(c: Context?, intent: Intent?) {
+                    mobileDataEnabled = try { telephonyManager?.isDataEnabled ?: false } catch (e: Exception) { false }
+                }
+            }
+            context.registerReceiver(receiver, IntentFilter("android.intent.action.ANY_DATA_STATE"))
+            onDispose { context.unregisterReceiver(receiver) }
         }
 
         Column(
@@ -1091,9 +1122,39 @@ class SystemIconsPopupController(
 
                     NetworkCard(
                         label = subscription.carrierName?.toString() ?: "SIM ${subscription.simSlotIndex + 1}",
-                        sublabel = networkType,
+                        sublabel = if (subId == defaultDataSubId && mobileDataEnabled) networkType else "No data",
                         strength = signalStrength,
-                        icon = Icons.Default.SignalCellularAlt
+                        icon = Icons.Default.SignalCellularAlt,
+                        isDataOn = subId == defaultDataSubId && mobileDataEnabled,
+                        onClick = {
+                            val simLabel = subscription.carrierName?.toString()
+                                ?: "SIM ${subscription.simSlotIndex + 1}"
+                            try {
+                                if (subId != defaultDataSubId) {
+                                    subscriptionManager?.setDefaultDataSubId(subId)
+                                    defaultDataSubId = subId
+                                    subTelephonyManager?.setDataEnabled(true)
+                                    mobileDataEnabled = true
+                                    Toast.makeText(
+                                        context,
+                                        "Connected to $simLabel",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                } else {
+                                    val newState = !mobileDataEnabled
+                                    subTelephonyManager?.setDataEnabled(newState)
+                                    mobileDataEnabled = newState
+                                    if (newState) {
+                                        Toast.makeText(
+                                            context,
+                                            "Connected to $simLabel",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+                            } catch (e: Exception) {
+                            }
+                        }
                     )
                 }
             }
@@ -1245,12 +1306,24 @@ class SystemIconsPopupController(
         label: String,
         sublabel: String,
         strength: Int,
-        icon: ImageVector
+        icon: ImageVector,
+        isActiveData: Boolean = false,
+        isDataOn: Boolean = false,
+        onClick: (() -> Unit)? = null
     ) {
+        val haptic = LocalHapticFeedback.current
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp),
+                .height(56.dp)
+                .let { m ->
+                    if (onClick != null) {
+                        m.clickable {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onClick()
+                        }
+                    } else m
+                },
             shape = RoundedCornerShape(16.dp),
             color = MaterialTheme.colorScheme.surfaceVariant,
             tonalElevation = 1.dp
