@@ -1877,6 +1877,10 @@ public class CachedAppOptimizer {
                                 mCompactStatsManager.logSomeCompactionPerformed(compactSource,
                                     name);
                                 break;
+                            case ANON:
+                                mCompactStatsManager.logAnonCompactionPerformed(compactSource,
+                                    name);
+                                break;
                             case FULL:
                                 long anonRssSavings = -deltaAnonRss;
                                 long zramConsumed = zramUsedKbAfter - zramUsedKbBefore;
