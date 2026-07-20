@@ -116,7 +116,7 @@ constructor(
         nowPlayingView.setOnClickListener {
             if (NowPlayingOverlayState.isOverlayOpen.value) {
                 expandedOverlay.hide()
-            } else {
+            } else if (currentSettings.tapToExpand) {
                 expandedOverlay.show()
             }
         }
@@ -145,6 +145,10 @@ constructor(
             0xFFFFFFFF.toInt()
         }
         
+        if (!settings.tapToExpand && NowPlayingOverlayState.isOverlayOpen.value) {
+            expandedOverlay.hide()
+        }
+
         nowPlayingView.apply {
             this.textColor = textColor
             iconStyle = settings.iconStyle
