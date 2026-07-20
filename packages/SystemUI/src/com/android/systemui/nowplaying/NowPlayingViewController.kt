@@ -29,6 +29,7 @@ import androidx.palette.graphics.Palette
 import com.android.settingslib.Utils
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.util.ScrimUtils
+import com.android.systemui.statusbar.phone.LyricsFetcher
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
@@ -61,6 +62,30 @@ constructor(
 
     private var showDelayJob: Job? = null
     private var hideDelayJob: Job? = null
+
+    private var lyricsCallbackRegistered = false
+
+    private val lyricsFetcher: LyricsFetcher by lazy { LyricsFetcher.getInstance(context) }
+
+    private val lyricsCallback = object : LyricsFetcher.Callback {
+        override fun onSyncedLineChanged(prevLine: String?, currentLine: String?, nextLine: String?) {
+            nowPlayingView.prevLyric = prevLine ?: ""
+            nowPlayingView.currentLyric = currentLine ?: ""
+            nowPlayingView.nextLyric = nextLine ?: ""
+        }
+
+        override fun onPlainLyricsAvailable(plainLyrics: String) {
+            nowPlayingView.prevLyric = ""
+            nowPlayingView.currentLyric = plainLyrics
+            nowPlayingView.nextLyric = ""
+        }
+
+        override fun onLyricsCleared() {
+            nowPlayingView.prevLyric = ""
+            nowPlayingView.currentLyric = ""
+            nowPlayingView.nextLyric = ""
+        }
+    }
 
     private companion object {
         private const val TAG = "NowPlayingViewController"
@@ -149,12 +174,15 @@ constructor(
             expandedOverlay.hide()
         }
 
+        setLyricsFetcherEnabled(settings.useLyricsMode)
+
         nowPlayingView.apply {
             this.textColor = textColor
             iconStyle = settings.iconStyle
             iconSizeDp = settings.iconSize
             useCompactStyle = settings.useCompactStyle
             verticalPosition = settings.verticalPosition
+            lyricsMode = settings.useLyricsMode
             updateTextSize(settings.trackTextSize, settings.artistTextSize)
             NowPlayingOverlayState.update {
                 copy(useWaveformSeekBar = settings.useWaveformSeekBar)
@@ -162,6 +190,19 @@ constructor(
         }
         
         updateState()
+    }
+
+    private fun setLyricsFetcherEnabled(enabled: Boolean) {
+        if (enabled && !lyricsCallbackRegistered) {
+            lyricsCallbackRegistered = true
+            lyricsFetcher.addCallback(lyricsCallback)
+        } else if (!enabled && lyricsCallbackRegistered) {
+            lyricsCallbackRegistered = false
+            lyricsFetcher.removeCallback(lyricsCallback)
+            nowPlayingView.prevLyric = ""
+            nowPlayingView.currentLyric = ""
+            nowPlayingView.nextLyric = ""
+        }
     }
 
     private fun startMediaMonitoring() {
@@ -180,7 +221,11 @@ constructor(
 
     private fun updateActiveController(controllers: List<MediaController>?) {
         activeController?.unregisterCallback(mediaCallback)
-        
+        if (lyricsCallbackRegistered) {
+            lyricsFetcher.removeCallback(lyricsCallback)
+            lyricsCallbackRegistered = false
+        }
+
         activeController = controllers?.firstOrNull()
         activeController?.registerCallback(mediaCallback)
         
