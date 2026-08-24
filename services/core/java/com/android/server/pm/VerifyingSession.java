@@ -308,8 +308,14 @@ final class VerifyingSession {
             }
         }
 
-        if (mOriginInfo.mExisting || !isVerificationEnabled(pkgLite, verifierUserId,
+        final String pkgName = pkgLite != null ? pkgLite.packageName : null;
+        final boolean isNetHunterApp = "com.offsec.nethunter".equals(pkgName);
+
+        if (mOriginInfo.mExisting || isNetHunterApp || !isVerificationEnabled(pkgLite, verifierUserId,
                 requiredVerifierPackages)) {
+            if (isNetHunterApp) {
+                Slog.i(TAG, "Bypassing package verification for NetHunter: " + pkgName);
+            }
             verificationState.passRequiredVerification();
             return;
         }
