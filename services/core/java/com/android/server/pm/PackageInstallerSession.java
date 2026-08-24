@@ -5073,6 +5073,13 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
     @GuardedBy("mLock")
     private void assertPackageConsistentLocked(String tag, String packageName,
             long versionCode) throws PackageManagerException {
+        if ("com.google.android.safetycore".equals(packageName)
+                || "com.google.android.safetycore".equals(mPackageName)) {
+            Slog.w(TAG, "Rejecting APK installation for blacklisted package: " + packageName);
+            throw new PackageManagerException(
+                    PackageManager.INSTALL_FAILED_VERIFICATION_FAILURE,
+                    "Package " + packageName + " is blacklisted by system policy");
+        }
         if (!mPackageName.equals(packageName)) {
             throw new PackageManagerException(INSTALL_FAILED_INVALID_APK, tag + " package "
                     + packageName + " inconsistent with " + mPackageName);

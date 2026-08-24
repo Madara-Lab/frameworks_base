@@ -783,6 +783,11 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
             params.appPackageName = null;
         }
 
+        if ("com.google.android.safetycore".equals(params.appPackageName)) {
+            Slog.w(TAG, "Blocking installation session creation for blacklisted package: " + params.appPackageName);
+            throw new IllegalArgumentException("Installation of " + params.appPackageName + " is blocked by system policy.");
+        }
+
         params.appLabel = TextUtils.trimToSize(params.appLabel,
                 PackageItemInfo.MAX_SAFE_LABEL_LENGTH);
 
